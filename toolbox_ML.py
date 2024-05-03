@@ -63,32 +63,93 @@ class TestFunciones(unittest.TestCase):
         resultado = describe_df(data)
         pd.testing.assert_frame_equal(resultado, resultado_esperado)
     
+    
+    
     def test_tipifica_variables (self):
-        data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
-        resultado_esperado = # yo le digo el resultado esperado
+        data = pd.DataFrame({
+            'sex': ['male', 'female', 'female', 'male'],
+            'age': [22, 38, 26, 35],
+            'sibsp': [1, 1, 0, 1],
+            'parch': [0, 0, 0, 0],
+            'fare': [7.25, 71.2833, 7.925, 53.1],
+            'class': ['Third', 'First', 'Third', 'First'],
+            'who': ['man', 'woman', 'woman', 'man'],
+            'adult_male': [True, False, False, True],
+            'embark_town': ['Southampton', 'Cherbourg', 'Southampton', 'Southampton'],
+            'alive': ['no', 'yes', 'yes', 'yes'],
+            'alone': [False, False, True, False]
+        })
+        param1_umbral_categoria = 3
+        param2_umbral_continua = 0.1
+        resultado_esperado = pd.DataFrame({
+            'nombre_variable': ['sex', 'age', 'sibsp', 'parch', 'fare', 'class', 'who', 'adult_male', 'embark_town', 'alive', 'alone'],
+            'tipo_sugerido': ['Binaria', 'Numérica Continua', 'Numérica Discreta', 'Numérica Discreta', 'Numérica Continua', 'Categórica', 'Categórica', 'Binaria', 'Categórica', 'Binaria', 'Binaria']
+        })
         resultado = tipifica_variables(data)
         pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
+    
+    
     def test_get_features_num_regression (self):
-        data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
-        resultado_esperado = # yo le digo el resultado esperado
+        data = pd.DataFrame({
+            'age': [22, 38, 26, 29, 35],  
+            'fare': [7.25, 71.2833, 7.925, 13.000, 35.500],  
+            'sibsp': [1, 1, 0, 0, 2],  
+            'parch': [0, 0, 0, 0, 2],  
+            'class': [3, 1, 3, 2, 1],  
+            'sex': ['male', 'female', 'female', 'male', 'female'],  
+            'embark_town': ['Southampton', 'Cherbourg', 'Southampton', 'Cherbourg', 'Southampton']  
+        })
+        param1_target_col = 'fare' 
+        param2_umbral_corr = 0.4
+        param3_pvalue = 0.05
+        resultado_esperado = ['age']
         resultado = get_features_num_regression(data)
         pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
+    
+    
     def test_plot_features_num_regression (self):
-        data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
-        resultado_esperado = # yo le digo el resultado esperado
+        data = pd.DataFrame({
+            'age': [22, 38, 26, 29, 35],
+            'fare': [7.25, 71.2833, 7.925, 13.000, 35.500],
+            'sibsp': [1, 1, 0, 0, 2],
+            'parch': [0, 0, 0, 0, 2],
+            'class': [3, 1, 3, 2, 1],
+            'sex': ['male', 'female', 'female', 'male', 'female'],
+            'embark_town': ['Southampton', 'Cherbourg', 'Southampton', 'Cherbourg', 'Southampton']
+        })
+        param1_target_col = 'fare'
+        param2_columns = ['age', 'class', 'sibsp']
+        param3_umbral_corr = 0.4
+        param4_pvalue = 0.05
+        resultado_esperado = ['age']
         resultado = plot_features_num_regression(data)
         pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
+    
+    
     def test_get_features_cat_regression (self):
-        data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
-        resultado_esperado = # yo le digo el resultado esperado
+        data = pd.DataFrame({
+            'target': [100, 150, 200, 250, 300],  
+            'gender': ['male', 'female', 'female', 'male', 'male'],  
+            'class': [1, 2, 1, 3, 2],  
+            'embarked': ['S', 'C', 'Q', 'S', 'C']  
+        })
+        param1_target_col = 'target'
+        param2_pvalue = 0.05
+        resultado_esperado = ['gender', 'class']
         resultado = get_features_cat_regression(data)
         pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
+    
+    
     def test_plot_features_cat_regression (self):
         data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
+        param1 =
+        param2 =
+        param3 =
+        param4 =
         resultado_esperado = # yo le digo el resultado esperado
         resultado = plot_features_cat_regression(data)
         pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
