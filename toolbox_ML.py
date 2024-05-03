@@ -34,7 +34,7 @@ Testeo
 
 class TestFunciones(unittest.TestCase):
     def test_describe_df (self):
-        data = pd.DataFrame ({
+        data = pd.DataFrame({
             'sex': ['male', 'female', 'male'],
             'age': [22.0, 38.0, 26.0],
             'sibsp': [1, 1, 0],
@@ -47,21 +47,14 @@ class TestFunciones(unittest.TestCase):
             'alive': ['no', 'yes', 'yes'],
             'alone': [False, False, True]
         })
-        resultado_esperado =  pd.DataFrame({
-            'sex': ['object', 0.0, 2, 0.22],
-            'age': ['float64', 0.0, 89, 9.99],
-            'sibsp': ['int64', 0.0, 7, 0.79],
-            'parch': ['int64', 0.0, 7, 0.79],
-            'fare': ['float64', 0.0, 248, 27.83],
-            'class': ['object', 0.0, 3, 0.34],
-            'who': ['object', 0.0, 3, 0.34],
-            'adult_male': ['bool', 0.0, 2, 0.22],
-            'embark_town': ['object', 0.0, 3, 0.34],
-            'alive': ['object', 0.0, 2, 0.22],
-            'alone': ['bool', 0.0, 2, 0.22]
-        }, index=['Tipos', '% Faltante', 'Valores Únicos', '% Cardinalidad']).T
-        resultado = describe_df(data)
-        pd.testing.assert_frame_equal(resultado, resultado_esperado)
+        resultado_esperado = pd.DataFrame({
+            'dtype': ['object', 'float64', 'int64', 'int64', 'float64', 'object', 'object', 'bool', 'object', 'object', 'bool'],
+            '% Missing': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            'Unique': [2, 3, 2, 1, 3, 2, 2, 2, 2, 2, 2],
+            '% Cardinality': [66.67, 100.0, 66.67, 33.33, 100.0, 66.67, 66.67, 66.67, 66.67, 66.67, 66.67]
+        }, index=['sex', 'age', 'sibsp', 'parch', 'fare', 'class', 'who', 'adult_male', 'embark_town', 'alive', 'alone']).T
+        resultado_obtenido = describe_df(data)
+        pd.testing.assert_frame_equal(resultado_obtenido, resultado_esperado)
     
     
     
@@ -79,14 +72,12 @@ class TestFunciones(unittest.TestCase):
             'alive': ['no', 'yes', 'yes', 'yes'],
             'alone': [False, False, True, False]
         })
-        param1_umbral_categoria = 3
-        param2_umbral_continua = 0.1
         resultado_esperado = pd.DataFrame({
             'nombre_variable': ['sex', 'age', 'sibsp', 'parch', 'fare', 'class', 'who', 'adult_male', 'embark_town', 'alive', 'alone'],
             'tipo_sugerido': ['Binaria', 'Numérica Continua', 'Numérica Discreta', 'Numérica Discreta', 'Numérica Continua', 'Categórica', 'Categórica', 'Binaria', 'Categórica', 'Binaria', 'Binaria']
         })
         resultado = tipifica_variables(data)
-        pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
+        pd.testing.assert_frame_equal(resultado, resultado_esperado)
 
     
     
@@ -100,12 +91,12 @@ class TestFunciones(unittest.TestCase):
             'sex': ['male', 'female', 'female', 'male', 'female'],  
             'embark_town': ['Southampton', 'Cherbourg', 'Southampton', 'Cherbourg', 'Southampton']  
         })
-        param1_target_col = 'fare' 
-        param2_umbral_corr = 0.4
-        param3_pvalue = 0.05
+        target_col = 'fare'
+        umbral_corr = 0.4
+        pvalue = 0.05
         resultado_esperado = ['age']
-        resultado = get_features_num_regression(data)
-        pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
+        resultado = get_features_num_regression(data, target_col, umbral_corr, pvalue)
+        self.assertListEqual(resultado, resultado_esperado)
 
     
     
@@ -136,26 +127,27 @@ class TestFunciones(unittest.TestCase):
             'class': [1, 2, 1, 3, 2],  
             'embarked': ['S', 'C', 'Q', 'S', 'C']  
         })
-        param1_target_col = 'target'
-        param2_pvalue = 0.05
-        resultado_esperado = ['gender', 'class']
-        resultado = get_features_cat_regression(data)
-        pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
+        target_col = 'target'
+        pvalue = 0.05
+        resultado_esperado = ['gender', 'class', 'embarked']
+        resultado = get_features_cat_regression(data, target_col, pvalue)
+        self.assertListEqual(resultado, resultado_esperado)
 
     
     
     def test_plot_features_cat_regression (self):
-        data = 'fare': [72, 48, 13, 30, 60, 80, 7, 23, 52, 18],
-            'gender': ['male', 'female', 'female', 'male', 'male', 'female', 'female', 'male', 'male', 'female'],
-            'class': ['1st', '2nd', '1st', '3rd', '2nd', '3rd', '1st', '3rd', '2nd', '1st']
-        })
-        param1_target_col=  "fare"
+        data = pd.DataFrame({
+        'fare': [72, 48, 13, 30, 60, 80, 7, 23, 52, 18],
+        'gender': ['male', 'female', 'female', 'male', 'male', 'female', 'female', 'male', 'male', 'female'],
+        'class': ['1st', '2nd', '1st', '3rd', '2nd', '3rd', '1st', '3rd', '2nd', '1st']
+    })
+        param1_target_col= "fare"
         param2_columns = ["gender", "class"]
         param3_pvalue = 0.05
         param4_with_individual_plot = False
         resultado_esperado = ['gender', 'class']
-        resultado = plot_features_cat_regression(data)
-        pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
+        resultado = plot_features_cat_regression(data, param1_target_col, param2_columns, param3_pvalue, param4_with_individual_plot)
+        self.assertEqual(set(resultado), set(resultado_esperado)) # Comparar contenido de las listas como sets
 
 if __name__ == '__main__':
 unittest.main()
