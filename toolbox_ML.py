@@ -1,6 +1,9 @@
 Módulo de herramientas
 Este módulo debe contener el código comentado que implemente las funciones descritas y especificadas en el apartado [fuciones]. La entrega se hará en el repositorio del grupo
 
+import pandas as pd
+import unittest
+
 Funciones dummies:
 
 def describe_df (df):
@@ -28,44 +31,69 @@ def plot_features_cat_regression (df, target_col = "", columns list = [], pvalue
     return 0
 
 Testeo
-import unittest
 
 class TestFunciones(unittest.TestCase):
     def test_describe_df (self):
-        data = pd.DataFrame({'A': [1, 2, None], 'B': [4, None, 6]}) # yo le pongo la info
-        resultado_esperado = # yo le digo el resultado esperado
+        data = pd.DataFrame ({
+            'sex': ['male', 'female', 'male'],
+            'age': [22.0, 38.0, 26.0],
+            'sibsp': [1, 1, 0],
+            'parch': [0, 0, 0],
+            'fare': [7.25, 71.2833, 7.925],
+            'class': ['Third', 'First', 'Third'],
+            'who': ['man', 'woman', 'man'],
+            'adult_male': [True, False, True],
+            'embark_town': ['Southampton', 'Cherbourg', 'Southampton'],
+            'alive': ['no', 'yes', 'yes'],
+            'alone': [False, False, True]
+        })
+        resultado_esperado =  pd.DataFrame({
+            'sex': ['object', 0.0, 2, 0.22],
+            'age': ['float64', 0.0, 89, 9.99],
+            'sibsp': ['int64', 0.0, 7, 0.79],
+            'parch': ['int64', 0.0, 7, 0.79],
+            'fare': ['float64', 0.0, 248, 27.83],
+            'class': ['object', 0.0, 3, 0.34],
+            'who': ['object', 0.0, 3, 0.34],
+            'adult_male': ['bool', 0.0, 2, 0.22],
+            'embark_town': ['object', 0.0, 3, 0.34],
+            'alive': ['object', 0.0, 2, 0.22],
+            'alone': ['bool', 0.0, 2, 0.22]
+        }, index=['Tipos', '% Faltante', 'Valores Únicos', '% Cardinalidad']).T
         resultado = describe_df(data)
-        self.assertEqual(resultado, resultado_esperado) # compara
-
+        pd.testing.assert_frame_equal(resultado, resultado_esperado)
+    
     def test_tipifica_variables (self):
         data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
         resultado_esperado = # yo le digo el resultado esperado
         resultado = tipifica_variables(data)
-        self.assertEqual(resultado, resultado_esperado) # compara
+        pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
     def test_get_features_num_regression (self):
         data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
         resultado_esperado = # yo le digo el resultado esperado
         resultado = get_features_num_regression(data)
-        self.assertEqual(resultado, resultado_esperado) # compara
+        pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
     def test_plot_features_num_regression (self):
         data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
         resultado_esperado = # yo le digo el resultado esperado
         resultado = plot_features_num_regression(data)
-        self.assertEqual(resultado, resultado_esperado) # compara
+        pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
     def test_get_features_cat_regression (self):
         data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
         resultado_esperado = # yo le digo el resultado esperado
         resultado = get_features_cat_regression(data)
-        self.assertEqual(resultado, resultado_esperado) # compara
+        pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
     def test_plot_features_cat_regression (self):
         data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
         resultado_esperado = # yo le digo el resultado esperado
         resultado = plot_features_cat_regression(data)
-        self.assertEqual(resultado, resultado_esperado) # compara
+        pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
-    if __name__ == '__main__':
-    unittest.main()
+if __name__ == '__main__':
+unittest.main()
+
+python -m unittest toolbox_ML.py
