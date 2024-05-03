@@ -83,13 +83,13 @@ class TestFunciones(unittest.TestCase):
     
     def test_get_features_num_regression (self):
         data = pd.DataFrame({
-            'age': [22, 38, 26, 29, 35],  
-            'fare': [7.25, 71.2833, 7.925, 13.000, 35.500],  
-            'sibsp': [1, 1, 0, 0, 2],  
-            'parch': [0, 0, 0, 0, 2],  
-            'class': [3, 1, 3, 2, 1],  
-            'sex': ['male', 'female', 'female', 'male', 'female'],  
-            'embark_town': ['Southampton', 'Cherbourg', 'Southampton', 'Cherbourg', 'Southampton']  
+        'age': [22, 38, 26, 29, 35],  
+        'fare': [7.25, 71.2833, 7.925, 13.000, 35.500],  
+        'sibsp': [1, 1, 0, 0, 2],  
+        'parch': [0, 0, 0, 0, 2],  
+        'class': [3, 1, 3, 2, 1],  
+        'sex': ['male', 'female', 'female', 'male', 'female'],  
+        'embark_town': ['Southampton', 'Cherbourg', 'Southampton', 'Cherbourg', 'Southampton']  
         })
         target_col = 'fare'
         umbral_corr = 0.4
@@ -127,11 +127,11 @@ class TestFunciones(unittest.TestCase):
             'class': [1, 2, 1, 3, 2],  
             'embarked': ['S', 'C', 'Q', 'S', 'C']  
         })
-        target_col = 'target'
-        pvalue = 0.05
-        resultado_esperado = ['gender', 'class', 'embarked']
-        resultado = get_features_cat_regression(data, target_col, pvalue)
-        self.assertListEqual(resultado, resultado_esperado)
+        param1_target_col = 'target'
+        param2_pvalue = 0.05
+        resultado_esperado = ['gender', 'class']
+        resultado = get_features_cat_regression(data)
+        pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
     
     
