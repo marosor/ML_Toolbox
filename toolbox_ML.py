@@ -145,12 +145,15 @@ class TestFunciones(unittest.TestCase):
     
     
     def test_plot_features_cat_regression (self):
-        data = pd.DataFrame({'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3]}) # yo le pongo la info
-        param1 =
-        param2 =
-        param3 =
-        param4 =
-        resultado_esperado = # yo le digo el resultado esperado
+        data = 'fare': [72, 48, 13, 30, 60, 80, 7, 23, 52, 18],
+            'gender': ['male', 'female', 'female', 'male', 'male', 'female', 'female', 'male', 'male', 'female'],
+            'class': ['1st', '2nd', '1st', '3rd', '2nd', '3rd', '1st', '3rd', '2nd', '1st']
+        })
+        param1_target_col=  "fare"
+        param2_columns = ["gender", "class"]
+        param3_pvalue = 0.05
+        param4_with_individual_plot = False
+        resultado_esperado = ['gender', 'class']
         resultado = plot_features_cat_regression(data)
         pd.testing.assert_frame_equal(resultado, resultado_esperado) # compara
 
