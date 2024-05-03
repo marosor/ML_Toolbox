@@ -7,7 +7,7 @@ import unittest
 Funciones dummies:
 
 def describe_df (df):
-    dataframe que tenga una columna por cada columan del dataframe original y como filas, los tipos de las columnas, el tanto por ciento de valores nulos o missings, los valores únicos y el porcentaje de cardinalidad.
+    dataframe que tenga una columna por cada columna del dataframe original y como filas, los tipos de las columnas, el tanto por ciento de valores nulos o missings, los valores únicos y el porcentaje de cardinalidad.
     return 0
 
 def tipifica_variables (df, entero, float):
