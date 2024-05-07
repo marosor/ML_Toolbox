@@ -14,4 +14,4 @@
 - Función | plot_features_num_regression
 - Función | get_features_cat_regression
 - Función | plot_features_cat_regression
-2. **Código Ejemplo:** En el archivo `Codigo_Ejemplo_Toolbox_ML`ponemos en práctica todas las funciones definidas
+2. **Código Ejemplo:** En el archivo `Codigo_Ejemplo_Toolbox_ML.ipynb`ponemos en práctica todas las funciones definidas
