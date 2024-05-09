@@ -379,7 +379,7 @@ def plot_features_cat_regression(df, target_col="", columns=[], pvalue=0.05, wit
     return columnas_filtradas
 
 # Función | plot_features_cat_regression_v2
-def plot_features_cat_regression(df, target_col="", columns=[], pvalue=0.05, with_individual_plot=False):
+def plot_features_cat_regression_v2(df, target_col="", columns=[], pvalue=0.05, with_individual_plot=False):
 
     # Comprobar que df es un dataframe
     if not (isinstance(df, pd.DataFrame)):
