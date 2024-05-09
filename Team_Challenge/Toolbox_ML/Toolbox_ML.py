@@ -3,7 +3,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import numpy as np
+from bootcampviztools import plot_categorical_numerical_relationship, plot_combined_graphs, \
+    pinta_distribucion_categoricas, plot_grouped_boxplots, plot_categorical_relationship_fin, plot_grouped_histograms
+from scipy.stats import mannwhitneyu
 from scipy.stats import pearsonr
+from scipy.stats import shapiro
+from scipy.stats import ttest_ind
+from scipy import stats
 
 # Función | describe_df
 def describe_df(df):
@@ -117,15 +123,19 @@ def get_features_num_regression(df, target_col, umbral_corr, pvalue = None):
         return None
     
     # Comprobar si umbral_corr está entre 0 y 1
+    if type(umbral_corr) != float and type(umbral_corr) != int:
+        print("Error: El parametro umbral_corr", umbral_corr, " no es un número.")
     if not 0 <= umbral_corr <= 1:
         print("Error: El umbral_corr debe estar entre 0 y 1.")
         return None
 
     # Comprobar si pvalue, si está definido, es un número entre 0 y 1
-    if pvalue is not None:
-        if not 0 <= pvalue <= 1:
-            print("Error: El pvalue debe estar entre 0 y 1.")
-            return None
+    if type(pvalue) != float and type(pvalue) != int:
+        print("Error: El parametro pvalue", pvalue, " no es un número.")
+        return None
+    elif  not (0 <= pvalue <= 1):
+        print("Error: El parametro pvalue", pvalue, " esta fuera del rango [0,1].")
+        return None
         
     # Código
     var_tip = tipifica_variables(df, 10, 20)
@@ -184,8 +194,14 @@ def plot_features_num_regression(df, target_col = "", columns = [], umbral_corr 
     
     columnas_filtradas = get_features_num_regression(df, target_col, umbral_corr, pvalue)
     
+    columnas_refiltradas = []
+    for col in columnas_filtradas:
+        for col2 in columns:
+            if col == col2:
+                columnas_refiltradas.append(col)
+
     # Divide la lista de columnas filtradas en grupos de máximo cinco columnas
-    columnas_agrupadas = [columnas_filtradas[i:i+4] for i in range(0, len(columnas_filtradas), 4)]
+    columnas_agrupadas = [columnas_refiltradas[i:i+4] for i in range(0, len(columnas_refiltradas), 4)]
     
     # Generar pairplots para cada grupo de columnas
     for group in columnas_agrupadas:
@@ -193,10 +209,163 @@ def plot_features_num_regression(df, target_col = "", columns = [], umbral_corr 
         plt.show()
     
     # Devolver la lista de columnas filtradas
-    return columnas_filtradas
+    return columnas_refiltradas
 
-# Función | get_features_cat_regression
+# Función | get_features_cat_regression (Versión 1 - Enunciado)
+def get_features_cat_regression(df, target_col, pvalue=0.05):
+    
+    #Comprobar que df es un dataframe
+    if not (isinstance(df, pd.DataFrame)):
+        print("Error: El parámetro df", df, " no es un DataFrame.")
+        return None
+    
+    #Comprobar que p-value es un entero o un float, y esta en el rango [0,1]
+    if type(pvalue) != float and type(pvalue) != int:
+        print("Error: El parámetro pvalue", pvalue, " no es un número.")
+        return None
+    elif  not (0 <= pvalue <= 1):
+        print("Error: El parametro pvalue", pvalue, " está fuera del rango [0,1].")
+        return None
+        
+    #Comprobar que target_col es una variable del dataframe
+    if  not (target_col in df.columns):
+        print("Error: El parámetro target ", target_col , " no es una columna del Dataframe.")
+        return None  
+      
+    #Comprobar que target_col es una variable numérica contínua
+    var_tip = tipifica_variables(df, 5, 10)
 
+    if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
+        print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
+        return None
+
+    #Hacer una lista con las colmunnas categóricas o binarias (???)
+    col_cat = var_tip[(var_tip["tipo_sugerido"] == "Categórica") | (var_tip["tipo_sugerido"] == "Binaria")]["nombre_variable"].tolist()
+    if col_cat == 0:
+        return None
+         
+    #Inicializamos la lista de salida
+    col_selec = []
+    
+    #Por cada columna categórica o binarias (???)
+    for valor in col_cat:
+        grupos = df[valor].unique()  # Obtener los valores únicos de la columna categórica
+        if len(grupos) == 2:
+            grupo_a = df.loc[df[valor] == grupos[0]][target_col]
+            grupo_b = df.loc[df[valor] == grupos[1]][target_col]
+            u_stat, p_val = mannwhitneyu(grupo_a, grupo_b)  # Aplicamos el test U de Mann
+        else:
+            v_cat = [df[df[valor] == grupo][target_col] for grupo in grupos] # obtenemos los grupos y los incluimos en una lista
+            f_val, p_val = stats.f_oneway(*v_cat) # Aplicamos el test ANOVA. El método * (igual que cuando vimos *args hace mil años)
+        if p_val < pvalue:
+            col_selec.append(valor) #Si supera el test correspondienteañadimos la variable a la lista de salida
+       
+    return col_selec
+
+# Función | get_features_cat_regression (Versión 2)
+def get_features_cat_regression_v2(df, target_col, pvalue=0.05):
+    
+    #Comprobar que df es un dataframe
+    if not (isinstance(df, pd.DataFrame)):
+        print("Error: El parámetro df", df, " no es un DataFrame.")
+        return None
+    
+    #Comprobar que p-value es un entero o un float, y esta en el rango [0,1]
+    if type(pvalue) != float and type(pvalue) != int:
+        print("Error: El parámetro pvalue", pvalue, " no es un número.")
+        return None
+    elif  not (0 <= pvalue <= 1):
+        print("Error: El parametro pvalue", pvalue, " está fuera del rango [0,1].")
+        return None
+        
+    #Comprobar que target_col es una variable del dataframe
+    if  not (target_col in df.columns):
+        print("Error: El parámetro target ", target_col , " no es una columna del Dataframe.")
+        return None  
+      
+    #Comprobar que target_col es una variable numérica contínua
+    var_tip = tipifica_variables(df, 5, 10)
+
+    if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
+        print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
+        return None
+
+    #Hacer una lista con las colmunnas categóricas o binarias (???)
+    col_cat = var_tip[(var_tip["tipo_sugerido"] == "Categórica") | (var_tip["tipo_sugerido"] == "Binaria")]["nombre_variable"].tolist()
+    if col_cat == 0:
+        return None
+         
+    #Inicializamos la lista de salida
+    col_selec = []
+    
+    #Por cada columna categórica o binarias (???)
+    for valor in col_cat:
+        grupos = df[valor].unique()  # Obtener los valores únicos de la columna categórica
+        if len(grupos) == 2:
+            grupo_a = df.loc[df[valor] == grupos[0]][target_col]
+            grupo_b = df.loc[df[valor] == grupos[1]][target_col]
+            _, p = shapiro(grupo_a) #Usamos la prueba de normalidad de Shapiro-Wilk para saber si siguen una distribución normal o no
+            _, p2 = shapiro(grupo_b)
+            if p < 0.05 and p2 < 0.05:
+                stat, p = ttest_ind(grupo_a, grupo_b) # Aplicamos el t-Student si siguen una distribución normal
+            else:
+                u_stat, p_val = mannwhitneyu(grupo_a, grupo_b)  # Aplicamos el test U de Mann si no la siguen
+        else:
+            v_cat = [df[df[valor] == grupo][target_col] for grupo in grupos] # obtenemos los grupos y los incluimos en una lista
+            f_val, p_val = stats.f_oneway(*v_cat) # Aplicamos el test ANOVA. El método * (igual que cuando vimos *args hace mil años)
+        if p_val < pvalue:
+            col_selec.append(valor) #Si supera el test correspondiente añadimos la variable a la lista de salida
+       
+    return col_selec
 
 # Función | plot_features_cat_regression
+def plot_features_cat_regression(df, target_col="", columns=[], pvalue=0.05, with_individual_plot=False):
 
+    # Comprobar que df es un dataframe
+    if not (isinstance(df, pd.DataFrame)):
+        print("Error: El parámetro df", df, " no es un DataFrame.")
+        return None
+    
+    # Comprobar que p-value es un entero o un float, y esta en el rango [0,1]
+    if type(pvalue) != float and type(pvalue) != int:
+        print("Error: El parámetro pvalue", pvalue, " no es un número.")
+        return None
+    elif  not (0 <= pvalue <= 1):
+        print("Error: El parámetro pvalue", pvalue, " está fuera del rango [0,1].")
+        return None
+        
+    # Comprobar que target_col es una variable del dataframe
+    if  not (target_col in df.columns):
+        print("Error: El parámetro target ", target_col , " no es una columna del Dataframe.")
+        return None  
+      
+    # Comprobar que target_col es una variable numérica contínua
+
+    var_tip = tipifica_variables(df, 5, 10)
+
+    if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
+        print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
+        return None
+
+    # Si la lista de columnas está vacía, asignar todas las variables CATEGORICAS del dataframe
+    if not columns:
+        columns = var_tip[var_tip["tipo_sugerido"] == "Categórica"]["nombre_variable"].tolist()
+    
+    # Si se proporciona una lista de columnas, comprobar si están en el DataFrame
+    else:
+        for col in columns:
+            if col not in df.columns:
+                print(f"Error: La columna {col} no está en el DataFrame.")
+                return None    
+
+    df_columns = df[columns]
+    df_columns[target_col] = df[target_col]        
+    
+    columnas_filtradas = get_features_cat_regression(df_columns, target_col, pvalue)
+
+    # Generar los histogramas agrupados para cada columna filtrada
+    for col in columnas_filtradas:        
+        plot_grouped_histograms(df, cat_col=col, num_col=target_col, group_size= len(df[col].unique()))
+    
+    # Devolver la lista de columnas filtradas
+    return columnas_filtradas
