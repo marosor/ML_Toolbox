@@ -292,7 +292,7 @@ def get_features_cat_regression_v2(df, target_col, pvalue=0.05):
         return None  
       
     #Comprobar que target_col es una variable numérica contínua
-    var_tip = tipifica_variables(df, 2, 5)
+    var_tip = tipifica_variables(df, 8, 12)
 
     if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
         print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
@@ -349,7 +349,7 @@ def plot_features_cat_regression(df, target_col="", columns=[], pvalue=0.05, wit
       
     # Comprobar que target_col es una variable numérica contínua
 
-    var_tip = tipifica_variables(df, 5, 10)
+    var_tip = tipifica_variables(df, 8, 12)
 
     if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
         print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
@@ -401,7 +401,7 @@ def plot_features_cat_regression_v2(df, target_col="", columns=[], pvalue=0.05, 
       
     # Comprobar que target_col es una variable numérica contínua
 
-    var_tip = tipifica_variables(df, 5, 10)
+    var_tip = tipifica_variables(df, 8, 12)
 
     if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
         print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
