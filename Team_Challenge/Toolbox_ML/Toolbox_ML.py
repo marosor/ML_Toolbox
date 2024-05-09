@@ -159,7 +159,7 @@ def get_features_num_regression(df, target_col, umbral_corr, pvalue = None):
                 if pvalue < (1 - p_value_especifico):
                     columnas_finales.append(col)
             columnas_filtradas = columnas_finales.copy()
-            
+
     if len(columnas_filtradas) == 0:
         print("No hay columna numérica que cumpla con las especificaciones de umbral de correlación y/o p-value.")
         return None
@@ -370,6 +370,58 @@ def plot_features_cat_regression(df, target_col="", columns=[], pvalue=0.05, wit
     df_columns[target_col] = df[target_col]        
     
     columnas_filtradas = get_features_cat_regression(df_columns, target_col, pvalue)
+
+    # Generar los histogramas agrupados para cada columna filtrada
+    for col in columnas_filtradas:        
+        plot_grouped_histograms(df, cat_col=col, num_col=target_col, group_size= len(df[col].unique()))
+    
+    # Devolver la lista de columnas filtradas
+    return columnas_filtradas
+
+# Función | plot_features_cat_regression_v2
+def plot_features_cat_regression(df, target_col="", columns=[], pvalue=0.05, with_individual_plot=False):
+
+    # Comprobar que df es un dataframe
+    if not (isinstance(df, pd.DataFrame)):
+        print("Error: El parámetro df", df, " no es un DataFrame.")
+        return None
+    
+    # Comprobar que p-value es un entero o un float, y esta en el rango [0,1]
+    if type(pvalue) != float and type(pvalue) != int:
+        print("Error: El parámetro pvalue", pvalue, " no es un número.")
+        return None
+    elif  not (0 <= pvalue <= 1):
+        print("Error: El parámetro pvalue", pvalue, " está fuera del rango [0,1].")
+        return None
+        
+    # Comprobar que target_col es una variable del dataframe
+    if  not (target_col in df.columns):
+        print("Error: El parámetro target ", target_col , " no es una columna del Dataframe.")
+        return None  
+      
+    # Comprobar que target_col es una variable numérica contínua
+
+    var_tip = tipifica_variables(df, 5, 10)
+
+    if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
+        print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
+        return None
+
+    # Si la lista de columnas está vacía, asignar todas las variables CATEGORICAS del dataframe
+    if not columns:
+        columns = var_tip[var_tip["tipo_sugerido"] == "Categórica"]["nombre_variable"].tolist()
+    
+    # Si se proporciona una lista de columnas, comprobar si están en el DataFrame
+    else:
+        for col in columns:
+            if col not in df.columns:
+                print(f"Error: La columna {col} no está en el DataFrame.")
+                return None    
+
+    df_columns = df[columns]
+    df_columns[target_col] = df[target_col]       
+    
+    columnas_filtradas = get_features_cat_regression_v2(df_columns, target_col, pvalue)
 
     # Generar los histogramas agrupados para cada columna filtrada
     for col in columnas_filtradas:        
