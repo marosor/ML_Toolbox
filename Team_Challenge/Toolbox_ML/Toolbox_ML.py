@@ -124,37 +124,45 @@ def get_features_num_regression(df, target_col, umbral_corr, pvalue = None):
     
     # Comprobar si umbral_corr está entre 0 y 1
     if type(umbral_corr) != float and type(umbral_corr) != int:
-        print("Error: El parametro umbral_corr", umbral_corr, " no es un número.")
+        print("Error: El parámetro umbral_corr", umbral_corr, " no es un número.")
     if not 0 <= umbral_corr <= 1:
         print("Error: El umbral_corr debe estar entre 0 y 1.")
         return None
-
-    # Comprobar si pvalue, si está definido, es un número entre 0 y 1
-    if type(pvalue) != float and type(pvalue) != int:
-        print("Error: El parametro pvalue", pvalue, " no es un número.")
-        return None
-    elif  not (0 <= pvalue <= 1):
-        print("Error: El parametro pvalue", pvalue, " esta fuera del rango [0,1].")
-        return None
+    
+    #Comprobar que p-value es un entero o un float, y esta en el rango [0,1]
+    if pvalue is not None:
+        if type(pvalue) != float and type(pvalue) != int:
+            print("Error: El parámetro pvalue", pvalue, " no es un número.")
+            return None
+        elif  not (0 <= pvalue <= 1):
+            print("Error: El parametro pvalue", pvalue, " está fuera del rango [0,1].")
+            return None
         
     # Código
-    var_tip = tipifica_variables(df, 10, 20)
+    var_tip = tipifica_variables(df, 8, 12)
     col_num = var_tip[(var_tip["tipo_sugerido"] == "Numérica Continua") | (var_tip["tipo_sugerido"] == "Numérica Discreta")]["nombre_variable"].tolist()
 
+    if len(col_num) == 0:
+        print("Error: No hay ninguna columna númerica o discreta a analizar que cumpla con los requisitos establecidos en los umbrales.")
+    else:
     # Se realizan las correlaciones y se eligen las que superen el umbral
-    correlaciones = df[col_num].corr()[target_col]
-    columnas_filtradas = correlaciones[abs(correlaciones) > umbral_corr].index.tolist()
-    if target_col in columnas_filtradas:
-        columnas_filtradas.remove(target_col)
+        correlaciones = df[col_num].corr()[target_col]
+        columnas_filtradas = correlaciones[abs(correlaciones) > umbral_corr].index.tolist()
+        if target_col in columnas_filtradas:
+            columnas_filtradas.remove(target_col)
     
-    # Comprobación de que si se introduce un p-value pase los tests de hipótesis
-    if pvalue is not None:
-        columnas_finales = []
-        for col in columnas_filtradas:
-            p_value_especifico = pearsonr(df[col], df[target_col])[1]
-            if pvalue < (1 - p_value_especifico):
-                columnas_finales.append(col)
-        columnas_filtradas = columnas_finales.copy()
+        # Comprobación de que si se introduce un p-value pase los tests de hipótesis
+        if pvalue is not None:
+            columnas_finales = []
+            for col in columnas_filtradas:
+                p_value_especifico = pearsonr(df[col], df[target_col])[1]
+                if pvalue < (1 - p_value_especifico):
+                    columnas_finales.append(col)
+            columnas_filtradas = columnas_finales.copy()
+            
+    if len(columnas_filtradas) == 0:
+        print("No hay columna numérica que cumpla con las especificaciones de umbral de correlación y/o p-value.")
+        return None
 
     return columnas_filtradas
 
@@ -212,7 +220,7 @@ def plot_features_num_regression(df, target_col = "", columns = [], umbral_corr 
     return columnas_refiltradas
 
 # Función | get_features_cat_regression (Versión 1 - Enunciado)
-def get_features_cat_regression(df, target_col, pvalue=0.05):
+def get_features_cat_regression(df, target_col, pvalue = 0.05):
     
     #Comprobar que df es un dataframe
     if not (isinstance(df, pd.DataFrame)):
@@ -233,7 +241,7 @@ def get_features_cat_regression(df, target_col, pvalue=0.05):
         return None  
       
     #Comprobar que target_col es una variable numérica contínua
-    var_tip = tipifica_variables(df, 5, 10)
+    var_tip = tipifica_variables(df, 8, 12)
 
     if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
         print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
@@ -258,7 +266,7 @@ def get_features_cat_regression(df, target_col, pvalue=0.05):
             v_cat = [df[df[valor] == grupo][target_col] for grupo in grupos] # obtenemos los grupos y los incluimos en una lista
             f_val, p_val = stats.f_oneway(*v_cat) # Aplicamos el test ANOVA. El método * (igual que cuando vimos *args hace mil años)
         if p_val < pvalue:
-            col_selec.append(valor) #Si supera el test correspondienteañadimos la variable a la lista de salida
+            col_selec.append(valor) #Si supera el test correspondiente añadimos la variable a la lista de salida
        
     return col_selec
 
@@ -284,7 +292,7 @@ def get_features_cat_regression_v2(df, target_col, pvalue=0.05):
         return None  
       
     #Comprobar que target_col es una variable numérica contínua
-    var_tip = tipifica_variables(df, 5, 10)
+    var_tip = tipifica_variables(df, 2, 5)
 
     if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
         print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
@@ -297,8 +305,8 @@ def get_features_cat_regression_v2(df, target_col, pvalue=0.05):
          
     #Inicializamos la lista de salida
     col_selec = []
-    
-    #Por cada columna categórica o binarias (???)
+
+    #Por cada columna categórica o binaria (???)
     for valor in col_cat:
         grupos = df[valor].unique()  # Obtener los valores únicos de la columna categórica
         if len(grupos) == 2:
@@ -307,7 +315,7 @@ def get_features_cat_regression_v2(df, target_col, pvalue=0.05):
             _, p = shapiro(grupo_a) #Usamos la prueba de normalidad de Shapiro-Wilk para saber si siguen una distribución normal o no
             _, p2 = shapiro(grupo_b)
             if p < 0.05 and p2 < 0.05:
-                stat, p = ttest_ind(grupo_a, grupo_b) # Aplicamos el t-Student si siguen una distribución normal
+                stat, p_val = ttest_ind(grupo_a, grupo_b) # Aplicamos el t-Student si siguen una distribución normal
             else:
                 u_stat, p_val = mannwhitneyu(grupo_a, grupo_b)  # Aplicamos el test U de Mann si no la siguen
         else:
