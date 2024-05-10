@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 
-def pinta_distribucion_categoricas(df, columnas_categoricas, relativa=False, mostrar_valores=False, giro = 45):
+def pinta_distribucion_categoricas(df, columnas_categoricas, relativa=False, mostrar_valores=False):
     num_columnas = len(columnas_categoricas)
     num_filas = (num_columnas // 2) + (num_columnas % 2)
 
@@ -25,7 +25,7 @@ def pinta_distribucion_categoricas(df, columnas_categoricas, relativa=False, mos
 
         ax.set_title(f'Distribución de {col}')
         ax.set_xlabel('')
-        ax.tick_params(axis='x', rotation=giro)
+        ax.tick_params(axis='x', rotation=45)
 
         if mostrar_valores:
             for p in ax.patches:
@@ -188,10 +188,10 @@ def plot_combined_graphs(df, columns, whisker_width=1.5, bins = None):
         plt.tight_layout()
         plt.show()
 
-def plot_grouped_boxplots(df, cat_col, num_col, group_size = 5):
+def plot_grouped_boxplots(df, cat_col, num_col):
     unique_cats = df[cat_col].unique()
     num_cats = len(unique_cats)
-
+    group_size = 5
 
     for i in range(0, num_cats, group_size):
         subset_cats = unique_cats[i:i+group_size]
@@ -272,81 +272,5 @@ def bubble_plot(df, col_x, col_y, col_size, scale = 1000):
     plt.ylabel(col_y)
     plt.title(f'Burbujas de {col_x} vs {col_y} con Tamaño basado en {col_size}')
     plt.show()
-
-
-def mostrar_diagramas_violin(df, columnas_numericas):
-    """
-    Muestra una matriz de diagramas de violín para las columnas numéricas especificadas de un DataFrame.
-
-    Args:
-    df (pd.DataFrame): DataFrame que contiene los datos.
-    columnas_numericas (list): Lista de nombres de las columnas numéricas.
-    """
-    num_cols = len(columnas_numericas)
-
-    # Configurar el tamaño de la figura
-    plt.figure(figsize=(num_cols * 4, 4))
-
-    # Crear un diagrama de violín para cada columna numérica
-    for i, col in enumerate(columnas_numericas, 1):
-        plt.subplot(1, num_cols, i)
-        sns.violinplot(y=df[col])
-        plt.title(col)
-
-    # Mostrar la matriz de diagramas de violín
-    plt.tight_layout()
-    plt.show()
-
-
-def plot_multiple_boxplots(df, columns, dim_matriz_visual = 2):
-    num_cols = len(columns)
-    num_rows = num_cols // dim_matriz_visual + num_cols % dim_matriz_visual
-    fig, axes = plt.subplots(num_rows, dim_matriz_visual, figsize=(12, 6 * num_rows))
-    axes = axes.flatten()
-
-    for i, column in enumerate(columns):
-        if df[column].dtype in ['int64', 'float64']:
-            sns.boxplot(data=df, x=column, ax=axes[i])
-            axes[i].set_title(column)
-
-    # Ocultar ejes vacíos
-    for j in range(i+1, num_rows * 2):
-        axes[j].axis('off')
-
-    plt.tight_layout()
-    plt.show()
-
-
-def scatter_plots_agrupados(df, col_categoria, col_num1, col_num2):
-    """
-    Genera scatter plots superpuestos de dos columnas numéricas, 
-    agrupados y coloreados según una columna categórica.
-
-    Args:
-    df (pd.DataFrame): DataFrame que contiene los datos.
-    col_categoria (str): Nombre de la columna categórica para agrupar y colorear los datos.
-    col_num1 (str): Nombre de la primera columna numérica para el eje X.
-    col_num2 (str): Nombre de la segunda columna numérica para el eje Y.
-    """
-    # Configuración para mejorar la estética del gráfico
-    sns.set(style="whitegrid")
-
-    plt.figure(figsize=(10, 8))
-
-    # Usar seaborn para generar los scatter plots agrupados y coloreados
-    sns.scatterplot(x=col_num1, y=col_num2, hue=col_categoria, data=df, palette="viridis")
-
-    # Añadir título y etiquetas
-    plt.title(f'Scatter Plots de {col_num1} vs {col_num2} Agrupados por {col_categoria}')
-    plt.xlabel(col_num1)
-    plt.ylabel(col_num2)
-
-    # Mostrar leyenda y gráfico
-    plt.legend(title=col_categoria)
-    plt.show()
-
-# Uso de la función
-# df es tu DataFrame
-# scatter_plots_agrupados(df, 'nombre_columna_categoria', 'nombre_columna_num1', 'nombre_columna_num2')
 
 
