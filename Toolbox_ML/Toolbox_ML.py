@@ -352,7 +352,7 @@ def get_features_cat_regression_v2(df, target_col, pvalue=0.05):
 ###############################################################################
 
 # Función | plot_features_cat_regression
-def plot_features_cat_regression(df, target_col="", columns=[], pvalue=0.05, with_individual_plot=False):
+def plot_features_cat_regression(df, target_col= "", columns=[], pvalue=0.05):
 
     # Comprobar que df es un dataframe
     if not (isinstance(df, pd.DataFrame)):
@@ -380,8 +380,8 @@ def plot_features_cat_regression(df, target_col="", columns=[], pvalue=0.05, wit
         print("Error: El parámetro target ", target_col , " no es una columna del Dataframe.")
         return None  
 
-    if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
-        print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
+    if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua") or (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Discreta"):
+        print("Error: El parámetro target_col ", target_col , " no es una columna numérica del dataframe bajo los criterios de umbrales establecidos.")
         return None
     
 
@@ -411,7 +411,7 @@ def plot_features_cat_regression(df, target_col="", columns=[], pvalue=0.05, wit
 ###############################################################################
 
 # Función | plot_features_cat_regression (Versión 2)
-def plot_features_cat_regression_v2(df, target_col="", columns=[], pvalue=0.05, with_individual_plot=False):
+def plot_features_cat_regression_v2(df, target_col= "", columns=[], pvalue=0.05):
 
     # Comprobar que df es un dataframe
     if not (isinstance(df, pd.DataFrame)):
@@ -430,20 +430,18 @@ def plot_features_cat_regression_v2(df, target_col="", columns=[], pvalue=0.05, 
 
     var_tip = tipifica_variables(df, 5, 9)
 
-    # Si no hay target_col, asignar una variable numérica continua del dataframe aleatoria
+    # Si no hay target_col, pedir al usuario la introducción de una
     if target_col == "":
-        target_cols = var_tip[var_tip["tipo_sugerido"] == "Numérica Continua"]["nombre_variable"].tolist()
-        print(target_cols)
-        target_col = np.random.choice(target_cols)
-        print(f"La variable elegida aleatoriamente para analizar es {target_col}")
+        print("Por favor, introduce una columna objetivo con la que realizar el análisis.")
+        return "plot_features_cat_regression(df, target_col= ___, ...)"
 
     # Comprobar que target_col es una variable del dataframe
     if  not (target_col in df.columns):
         print("Error: El parámetro target ", target_col , " no es una columna del Dataframe.")
         return None  
 
-    if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
-        print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
+    if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua") or (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Discreta"):
+        print("Error: El parámetro target_col ", target_col , " no es una columna numérica del dataframe bajo los criterios de umbrales establecidos.")
         return None
 
     # Si la lista de columnas está vacía, asignar todas las variables CATEGORICAS del dataframe
