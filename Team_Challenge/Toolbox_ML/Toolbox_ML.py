@@ -138,20 +138,22 @@ def get_features_num_regression(df, target_col, umbral_corr, pvalue = None):
             print("Error: El parametro pvalue", pvalue, " está fuera del rango [0,1].")
             return None
         
-    # Código
-    var_tip = tipifica_variables(df, 8, 12)
+    # Se usa la función tipifica_variables para identificar las variables numéricas
+    var_tip = tipifica_variables(df, 5, 9)
     col_num = var_tip[(var_tip["tipo_sugerido"] == "Numérica Continua") | (var_tip["tipo_sugerido"] == "Numérica Discreta")]["nombre_variable"].tolist()
 
+    # Comprobación de que hay alguna columna numérica para relacionar
     if len(col_num) == 0:
         print("Error: No hay ninguna columna númerica o discreta a analizar que cumpla con los requisitos establecidos en los umbrales.")
     else:
+
     # Se realizan las correlaciones y se eligen las que superen el umbral
         correlaciones = df[col_num].corr()[target_col]
         columnas_filtradas = correlaciones[abs(correlaciones) > umbral_corr].index.tolist()
         if target_col in columnas_filtradas:
             columnas_filtradas.remove(target_col)
     
-        # Comprobación de que si se introduce un p-value pase los tests de hipótesis
+        # Comprobación de que si se introduce un p-value pase los tests de hipótesis (Pearson)
         if pvalue is not None:
             columnas_finales = []
             for col in columnas_filtradas:
@@ -241,13 +243,13 @@ def get_features_cat_regression(df, target_col, pvalue = 0.05):
         return None  
       
     #Comprobar que target_col es una variable numérica contínua
-    var_tip = tipifica_variables(df, 8, 12)
+    var_tip = tipifica_variables(df, 5, 9)
 
     if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
-        print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
+        print("Error: El parámetro target ", target_col , " no es una columna numérica contínua del dataframe.")
         return None
 
-    #Hacer una lista con las colmunnas categóricas o binarias (???)
+    #Hacer una lista con las colmunnas categóricas o binarias
     col_cat = var_tip[(var_tip["tipo_sugerido"] == "Categórica") | (var_tip["tipo_sugerido"] == "Binaria")]["nombre_variable"].tolist()
     if col_cat == 0:
         return None
@@ -255,7 +257,7 @@ def get_features_cat_regression(df, target_col, pvalue = 0.05):
     #Inicializamos la lista de salida
     col_selec = []
     
-    #Por cada columna categórica o binarias (???)
+    #Por cada columna categórica o binaria
     for valor in col_cat:
         grupos = df[valor].unique()  # Obtener los valores únicos de la columna categórica
         if len(grupos) == 2:
@@ -292,7 +294,7 @@ def get_features_cat_regression_v2(df, target_col, pvalue=0.05):
         return None  
       
     #Comprobar que target_col es una variable numérica contínua
-    var_tip = tipifica_variables(df, 8, 12)
+    var_tip = tipifica_variables(df, 5, 9)
 
     if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
         print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
@@ -306,7 +308,7 @@ def get_features_cat_regression_v2(df, target_col, pvalue=0.05):
     #Inicializamos la lista de salida
     col_selec = []
 
-    #Por cada columna categórica o binaria (???)
+    #Por cada columna categórica o binaria 
     for valor in col_cat:
         grupos = df[valor].unique()  # Obtener los valores únicos de la columna categórica
         if len(grupos) == 2:
@@ -331,29 +333,36 @@ def plot_features_cat_regression(df, target_col="", columns=[], pvalue=0.05, wit
 
     # Comprobar que df es un dataframe
     if not (isinstance(df, pd.DataFrame)):
-        print("Error: El parámetro df", df, " no es un DataFrame.")
+        print("Error: El parámetro df", df, "no es un DataFrame.")
         return None
     
     # Comprobar que p-value es un entero o un float, y esta en el rango [0,1]
     if type(pvalue) != float and type(pvalue) != int:
-        print("Error: El parámetro pvalue", pvalue, " no es un número.")
+        print("Error: El parámetro pvalue", pvalue, "no es un número.")
         return None
     elif  not (0 <= pvalue <= 1):
-        print("Error: El parámetro pvalue", pvalue, " está fuera del rango [0,1].")
+        print("Error: El parámetro pvalue", pvalue, "está fuera del rango [0,1].")
         return None
-        
+      
+    # Comprobar que target_col es una variable numérica continua
+    var_tip = tipifica_variables(df, 5, 9)
+
+    # Si no hay target_col, asignar una variable numérica continua del dataframe aleatoria
+    if target_col == "":
+        target_cols = var_tip[var_tip["tipo_sugerido"] == "Numérica Continua"]["nombre_variable"].tolist()
+        print(target_cols)
+        target_col = np.random.choice(target_cols)
+        print(f"La variable elegida aleatoriamente para analizar es {target_col}")
+    
     # Comprobar que target_col es una variable del dataframe
     if  not (target_col in df.columns):
         print("Error: El parámetro target ", target_col , " no es una columna del Dataframe.")
         return None  
-      
-    # Comprobar que target_col es una variable numérica contínua
-
-    var_tip = tipifica_variables(df, 8, 12)
 
     if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
         print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
         return None
+    
 
     # Si la lista de columnas está vacía, asignar todas las variables CATEGORICAS del dataframe
     if not columns:
@@ -393,15 +402,22 @@ def plot_features_cat_regression_v2(df, target_col="", columns=[], pvalue=0.05, 
     elif  not (0 <= pvalue <= 1):
         print("Error: El parámetro pvalue", pvalue, " está fuera del rango [0,1].")
         return None
-        
+      
+    # Comprobar que target_col es una variable numérica contínua
+
+    var_tip = tipifica_variables(df, 5, 9)
+
+    # Si no hay target_col, asignar una variable numérica continua del dataframe aleatoria
+    if target_col == "":
+        target_cols = var_tip[var_tip["tipo_sugerido"] == "Numérica Continua"]["nombre_variable"].tolist()
+        print(target_cols)
+        target_col = np.random.choice(target_cols)
+        print(f"La variable elegida aleatoriamente para analizar es {target_col}")
+
     # Comprobar que target_col es una variable del dataframe
     if  not (target_col in df.columns):
         print("Error: El parámetro target ", target_col , " no es una columna del Dataframe.")
         return None  
-      
-    # Comprobar que target_col es una variable numérica contínua
-
-    var_tip = tipifica_variables(df, 8, 12)
 
     if not (var_tip.loc[var_tip["nombre_variable"] == target_col, "tipo_sugerido"].iloc[0] == "Numérica Continua"):
         print("Error: El parametro target ", target_col , " no es una columna numérica continua del dataframe.")
