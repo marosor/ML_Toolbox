@@ -136,6 +136,56 @@ def eval_model(target, predicciones, tipo_de_problema, metricas):
 ###############################################################################
 
 # Función | get_features_num_classification
+def get_features_num_classification(dataframe, target_col="", columns=None, pvalue=0.05):
+    """
+    Selecciona las columnas numéricas de un dataframe que pasan una prueba de ANOVA frente a la columna objetivo,
+    según un nivel de significación especificado.
+
+    Argumentos:
+    dataframe (pd.DataFrame): El dataframe que contiene los datos.
+    target_col (str): Nombre de la columna objetivo para la clasificación. Valor por defecto es una cadena vacía.
+    columns (list): Lista de nombres de columnas a considerar. Si no se proporciona, se consideran todas las columnas numéricas. Valor por defecto es None.
+    pvalue (float): Nivel de significación para la prueba de ANOVA. Valor por defecto es 0.05.
+
+    Retorna:
+    list: Devuelve una lista de nombres de columnas que cumplen con el criterio de significación especificado.
+    """
+    
+    # Validar entradas
+    if not isinstance(dataframe, pd.DataFrame):
+        raise ValueError("dataframe debe ser un DataFrame de pandas")
+    if not isinstance(target_col, str):
+        raise ValueError("target_col debe ser un string")
+    if columns is not None and not all(isinstance(col, str) for col in columns):
+        raise ValueError("columns debe ser una lista de strings")
+    if not isinstance(pvalue, (int, float)) or not (0 < pvalue < 1):
+        raise ValueError("pvalue debe ser un número entre 0 y 1")
+    
+    # Si columns es None, igualar a las columnas numéricas del dataframe
+    if columns is None:
+        columns = dataframe.select_dtypes(include=['number']).columns.tolist()
+    else:
+        # Filtrar solo las columnas numéricas que están en la lista
+        columns = [col for col in columns if dataframe[col].dtype in ['float64', 'int64']]
+    
+    # Asegurarse de que target_col esté en el dataframe
+    if target_col and target_col not in dataframe.columns:
+        raise ValueError(f"{target_col} no está en el dataframe")
+    
+    # Filtrar columnas que cumplen el test de ANOVA
+    valid_columns = []
+    if target_col:
+        unique_classes = dataframe[target_col].unique()
+        for col in columns:
+            groups = [dataframe[dataframe[target_col] == cls][col].dropna() for cls in unique_classes]
+            if len(groups) > 1 and all(len(group) > 0 for group in groups):
+                f_val, p_val = f_oneway(*groups)
+                if p_val < pvalue:
+                    valid_columns.append(col)
+    else:
+        valid_columns = columns
+
+    return valid_columns
 
 
 
