@@ -15,7 +15,7 @@
 - Función | get_features_num_regression
 - Función | plot_features_num_regression
 - Función | get_features_cat_regression
-- Función | plot_features_cat_regression
+- Función | plot_features_cat_regression  
 **Código Ejemplo:** En el archivo `Toolbox_Inputs.ipynb`ponemos en práctica todas las funciones definidas
 
 2. En la carpeta `Toolbox_ML_II`se encuentran:
@@ -26,5 +26,5 @@
 - Función | plot_features_num_classification
 - Función | get_features_cat_classification
 - Función | plot_features_cat_classification
-- Función | super_selector
+- Función | super_selector  
 **Código Ejemplo:** En el archivo `Toolbox_Inputs_II.ipynb`ponemos en práctica todas las funciones definidas
