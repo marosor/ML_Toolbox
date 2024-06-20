@@ -6,8 +6,7 @@ import pandas as pd
 import seaborn as sns
 
 from sklearn.feature_selection import mutual_info_classif
-from sklearn.metrics import accuracy_score, precision_score, recall_score, classification_report, confusion_matrix
-from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score, precision_score, recall_score, classification_report, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from scipy.stats import f_oneway
 
@@ -66,7 +65,7 @@ def eval_model(target, predicciones, tipo_de_problema, metricas):
                 plt.title("Gráfico de Dispersión: Valores reales VS Valores predichos")
                 plt.show()
 
-     # Clasificación
+     # Clasificación         
     elif tipo_de_problema == "clasificacion":
 
         for metrica in metricas:
@@ -95,14 +94,16 @@ def eval_model(target, predicciones, tipo_de_problema, metricas):
                 print(confusion_matrix(target, predicciones))
 
             elif metrica == "MATRIX_RECALL":
-                disp = ConfusionMatrixDisplay(confusion_matrix = confusion_matrix(target, predicciones))
-                disp.plot(normalize = "true")
+                cm_normalized_recall = confusion_matrix(target, predicciones, normalize = "true")
+                disp = ConfusionMatrixDisplay(confusion_matrix = cm_normalized_recall)
+                disp.plot()
                 plt.title("Confusion Matrix (Normalized by Recall)")
                 plt.show()
 
             elif metrica == "MATRIX_PRED":
-                disp = ConfusionMatrixDisplay(confusion_matrix = confusion_matrix(target, predicciones))
-                disp.plot(normalize = "pred")
+                cm_normalized_pred = confusion_matrix(target, predicciones, normalize = "pred")
+                disp = ConfusionMatrixDisplay(confusion_matrix = cm_normalized_pred)
+                disp.plot()
                 plt.title("Confusion Matrix (Normalized by Prediction)")
                 plt.show()
 
