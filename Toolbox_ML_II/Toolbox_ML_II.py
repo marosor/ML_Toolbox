@@ -37,7 +37,6 @@ def eval_model(target, predicciones, tipo_de_problema, metricas):
     results = []
 
     # Regresión
-
     if tipo_de_problema == "regresion":
 
         for metrica in metricas:
@@ -68,7 +67,6 @@ def eval_model(target, predicciones, tipo_de_problema, metricas):
                 plt.show()
 
      # Clasificación
-                
     elif tipo_de_problema == "clasificacion":
 
         for metrica in metricas:
@@ -127,7 +125,6 @@ def eval_model(target, predicciones, tipo_de_problema, metricas):
                     raise ValueError(f"La clase {class_label} no está presente en las predicciones")
                 
     # Si no es regresión o clasificación
-
     else:
         raise ValueError("El tipo de problema debe ser de regresión o clasificación")
 
@@ -136,7 +133,9 @@ def eval_model(target, predicciones, tipo_de_problema, metricas):
 ###############################################################################
 
 # Función | get_features_num_classification
+
 def get_features_num_classification(dataframe, target_col="", columns=None, pvalue=0.05):
+
     """
     Selecciona las columnas numéricas de un dataframe que pasan una prueba de ANOVA frente a la columna objetivo,
     según un nivel de significación especificado.
@@ -186,8 +185,6 @@ def get_features_num_classification(dataframe, target_col="", columns=None, pval
         valid_columns = columns
 
     return valid_columns
-
-
 
 ###############################################################################
 
@@ -285,7 +282,7 @@ def get_features_cat_classification(df, target_col, normalize=False, mi_threshol
     information con 'target_col' iguale o supere el valor de "mi_threshold".
 
     Argumentos:
-    df (pandas.DataFrame): el dataframe a analizar
+    df (pd.DataFrame): el dataframe a analizar
     target_col (columna del df): la columna del dataframe a analizar
     normalize (bool): si queremos que el valor de mutual information se normalice o no
     mi_threshold (float): el valor a superar al analizar "mutual information"
@@ -355,7 +352,7 @@ def plot_features_cat_classification(df, target_col="", columns=[], mi_threshold
     la columna "target_col". Si la lista "columns" está vacía, cogerá todas las columnas categóricas del df.
 
     Argumentos:
-    df (pandas.DataFrame): el dataframe a analizar
+    df (pd.DataFrame): el dataframe a analizar
     target_col (str): la columna del dataframe a analizar
     columns (list): la lista de columnas a comparar con target_col
     mi_threshold (float): el valor a superar al analizar "mutual information"
@@ -363,7 +360,6 @@ def plot_features_cat_classification(df, target_col="", columns=[], mi_threshold
 
     Retorna:
     selected_columns (list): las columnas que superan el threshold impuesto
-
     """
 
     # Verificar que el dataframe es de tipo pandas DataFrame
