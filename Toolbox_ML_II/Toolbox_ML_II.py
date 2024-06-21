@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from sklearn.feature_selection import mutual_info_classif
+from sklearn.feature_selection import mutual_info_classif, SelectKBest, f_classif, SelectFromModel, RFE, SequentialFeatureSelector
 from sklearn.metrics import accuracy_score, precision_score, recall_score, classification_report, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from scipy.stats import f_oneway
@@ -435,3 +435,88 @@ def plot_features_cat_classification(df, target_col="", columns=[], mi_threshold
 
 # Función | super_selector
 
+def super_selector(dataset, target_col = "", selectores = None, hard_voting = []):
+
+    """
+    Función que selecciona features de un dataframe utilizando varios métodos y realiza un hard voting entre las listas seleccionadas
+    
+    Argumentos:
+    dataset (pd.DataFrame): DataFrame con las features y el target
+    target_col (str): Columna objetivo en el dataset. Puede ser numérica o categórica
+    selectores (dict): Diccionario con los métodos de selección a utilizar. Puede contener las claves "KBest", "FromModel", "RFE" y "SFS"
+    hard_voting (list): Lista de features para incluir en el hard voting
+
+    Retorna:
+    dict: Diccionario con las listas de features seleccionadas por cada método y una lista final por hard voting.
+    """
+    
+    # Inicializar el diccionario de selectores si es None
+    if selectores is None:
+        selectores = {}
+
+    # Separar features y target del dataset
+    features = dataset.drop(columns = [target_col]) if target_col else dataset
+    target = dataset[target_col] if target_col else None
+    
+    result = {}
+
+    # Caso en que selectores esté vacío o sea None
+    if target_col and target_col in dataset.columns:
+        if not selectores:
+            # Filtrar features que no son constantes y tienen más de una categoría
+            filtered_features = [col for col in features.columns if
+                                 (features[col].nunique() / len(features) < 0.9999) and
+                                 (features[col].nunique() > 1)]
+            result["all_features"] = filtered_features
+
+    # Aplicación de selectores si no está vacío
+    if selectores:
+        if "KBest" in selectores:
+            k = selectores["KBest"]
+            selector = SelectKBest(score_func = f_classif, k = k)
+            selector.fit(features, target)
+            selected_features = features.columns[selector.get_support()].tolist()
+            result["KBest"] = selected_features
+
+        if "FromModel" in selectores:
+            model, threshold_or_max = selectores["FromModel"]
+            if isinstance(threshold_or_max, int):
+                selector = SelectFromModel(model, max_features=threshold_or_max, threshold = -np.inf)
+            else:
+                selector = SelectFromModel(model, threshold = threshold_or_max)
+            selector.fit(features, target)
+            selected_features = features.columns[selector.get_support()].tolist()
+            result["FromModel"] = selected_features
+
+        if "RFE" in selectores:
+            model, n_features, step = selectores["RFE"]
+            selector = RFE(model, n_features_to_select = n_features, step = step)
+            selector.fit(features, target)
+            selected_features = features.columns[selector.get_support()].tolist()
+            result["RFE"] = selected_features
+
+        if "SFS" in selectores:
+            model, k_features = selectores["SFS"]
+            sfs = SequentialFeatureSelector(model, n_features_to_select = k_features, direction = "forward")
+            sfs.fit(features, target)
+            selected_features = features.columns[sfs.get_support()].tolist()
+            result["SFS"] = selected_features
+
+    # Hard Voting
+    if hard_voting or selectores:
+        voting_features = []
+        if "hard_voting" not in result:
+            voting_features = hard_voting.copy()
+        for key in result:
+            voting_features.extend(result[key])
+
+        # Contar la frecuencia de cada feature seleccionada
+        feature_counts = pd.Series(voting_features).value_counts()
+        
+        # Seleccionar las features que aparecen más de una vez
+        hard_voting_result = feature_counts[feature_counts > 1].index.tolist()
+        
+        # Si no hay features repetidas, usar todas
+        result["hard_voting"] = hard_voting_result if hard_voting_result else list(feature_counts.index)
+
+    return result
