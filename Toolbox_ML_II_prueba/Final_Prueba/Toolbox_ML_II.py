@@ -207,28 +207,41 @@ def plot_features_num_classification(dataframe, target_col="", columns=None, pva
     Retorna:
     list: Devuelve una lista de nombres de columnas que cumplen con el criterio de significación especificado.
     """
-    
+
     # Validar entradas
     if not isinstance(dataframe, pd.DataFrame):
-        raise ValueError("dataframe debe ser un DataFrame de pandas")
+        print("dataframe debe ser un DataFrame de pandas")
+        return None
     if not isinstance(target_col, str):
-        raise ValueError("target_col debe ser un string")
+        print("target_col debe ser un string")
+        return None
     if columns is not None and not all(isinstance(col, str) for col in columns):
-        raise ValueError("columns debe ser una lista de strings")
+        print("columns debe ser una lista de strings")
+        return None
     if not isinstance(pvalue, (int, float)) or not (0 < pvalue < 1):
-        raise ValueError("pvalue debe ser un número entre 0 y 1")
-    
+        print("Eso no es un pvalue válido")
+        return None
+
     # Si columns es None, igualar a las columnas numéricas del dataframe
     if columns is None:
         columns = dataframe.select_dtypes(include=['number']).columns.tolist()
     else:
+        # Verificar si todas las columnas en la lista existen en el dataframe
+        missing_columns = [col for col in columns if col not in dataframe.columns]
+        if missing_columns:
+            print("Esas columnas no existen en tu dataframe:", missing_columns)
+            return None
         # Filtrar solo las columnas numéricas que están en la lista
         columns = [col for col in columns if dataframe[col].dtype in ['float64', 'int64']]
-    
+        if len(columns) == 0:
+            print("Debes elegir columnas numéricas")
+            return None
+
     # Asegurarse de que target_col esté en el dataframe
     if target_col and target_col not in dataframe.columns:
-        raise ValueError(f"{target_col} no está en el dataframe")
-    
+        print(f"Esa columna no existe en tu dataframe")
+        return None
+
     # Filtrar columnas que cumplen el test de ANOVA
     valid_columns = []
     if target_col:
@@ -242,26 +255,24 @@ def plot_features_num_classification(dataframe, target_col="", columns=None, pva
     else:
         valid_columns = columns
 
-    # Si no hay columnas válidas, retornar una lista vacía
+    # Si no hay columnas válidas, retornar un mensaje
     if not valid_columns:
+        print("Ninguna columna cumple con el pvalue indicado")
         return []
+
+    # Excluir la columna objetivo de los resultados
+    if target_col in valid_columns:
+        valid_columns.remove(target_col)
 
     # Crear pairplots
     max_cols_per_plot = 5  # Máximo de columnas por plot
     if target_col:
         num_classes = len(dataframe[target_col].unique())
-        num_plots = max(1, (num_classes + 4) // 5)  # Número de plots según EXTRA_1
-
-        for i in range(num_plots):
-            class_subset = dataframe[target_col].unique()[i*5:(i+1)*5]
-            subset_df = dataframe[dataframe[target_col].isin(class_subset)]
-            
-            # Dividir las columnas en grupos de max_cols_per_plot según EXTRA_2
-            for j in range(0, len(valid_columns), max_cols_per_plot):
-                plot_columns = valid_columns[j:j+max_cols_per_plot]
-                plot_columns.append(target_col)
-                sns.pairplot(subset_df[plot_columns], hue=target_col)
-                plt.show()
+        for i in range(0, len(valid_columns), max_cols_per_plot):
+            plot_columns = valid_columns[i:i+max_cols_per_plot]
+            plot_columns.append(target_col)
+            sns.pairplot(dataframe[plot_columns], hue=target_col)
+            plt.show()
     else:
         # Sin target_col, dividir en grupos de max_cols_per_plot
         for i in range(0, len(valid_columns), max_cols_per_plot):

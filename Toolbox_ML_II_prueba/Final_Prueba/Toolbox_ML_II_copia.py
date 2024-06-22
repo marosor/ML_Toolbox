@@ -16,7 +16,6 @@ from Toolbox_ML import *
 ###############################################################################
 
 # Función | eval_model
-
 def eval_model(target, predicciones, tipo_de_problema, metricas):
 
     """
@@ -42,7 +41,7 @@ def eval_model(target, predicciones, tipo_de_problema, metricas):
         print("Te falta el argumento predicciones")
         return None
     if tipo_de_problema not in ["regresion", "clasificacion"]:
-        print("Te falta el argumento tipo_de_problema o el valor proporcionado no es válido")
+        print("Te has equivocado de problema")
         return None
     if metricas is None or not isinstance(metricas, list):
         print("Te falta el argumento metricas o el valor proporcionado no es una lista")
@@ -91,12 +90,12 @@ def eval_model(target, predicciones, tipo_de_problema, metricas):
                 results.append(accuracy)
 
             elif metrica == "PRECISION":
-                precision = precision_score(target, predicciones, average = "macro")
+                precision = precision_score(target, predicciones, average="macro")
                 print(f"Precision: {precision}")
                 results.append(precision)
 
             elif metrica == "RECALL":
-                recall = recall_score(target, predicciones, average = "macro")
+                recall = recall_score(target, predicciones, average="macro")
                 print(f"Recall: {recall}")
                 results.append(recall)
 
@@ -109,41 +108,39 @@ def eval_model(target, predicciones, tipo_de_problema, metricas):
                 print(confusion_matrix(target, predicciones))
 
             elif metrica == "MATRIX_RECALL":
-                cm_normalized_recall = confusion_matrix(target, predicciones, normalize = "true")
-                disp = ConfusionMatrixDisplay(confusion_matrix = cm_normalized_recall)
+                cm_normalized_recall = confusion_matrix(target, predicciones, normalize="true")
+                disp = ConfusionMatrixDisplay(confusion_matrix=cm_normalized_recall)
                 disp.plot()
                 plt.title("Confusion Matrix (Normalized by Recall)")
                 plt.show()
 
             elif metrica == "MATRIX_PRED":
-                cm_normalized_pred = confusion_matrix(target, predicciones, normalize = "pred")
-                disp = ConfusionMatrixDisplay(confusion_matrix = cm_normalized_pred)
+                cm_normalized_pred = confusion_matrix(target, predicciones, normalize="pred")
+                disp = ConfusionMatrixDisplay(confusion_matrix=cm_normalized_pred)
                 disp.plot()
                 plt.title("Confusion Matrix (Normalized by Prediction)")
                 plt.show()
 
             elif "PRECISION_" in metrica:
-                class_label = metrica.split("_")[-1]
+                class_label = metrica.split("_", 1)[-1]
                 if class_label in target:
-                    precision_class = precision_score(target, predicciones, labels=[class_label], average='macro')
-                    print(f"Precisión para la clase {class_label}: {precision_class}")
-                    results.append(precision_class)
+                    precision_class = precision_score(target, predicciones, labels=[class_label], average=None, zero_division=0)
+                    print(f"Precisión para la clase {class_label}: {precision_class[0]}")
+                    results.append(precision_class[0])
                 else:
-                    raise ValueError(f"La clase {class_label} no está presente en las predicciones")
+                    print(f"La clase {class_label} no está presente en las predicciones")
+                    return None
                 
             elif "RECALL_" in metrica:
-                class_label = metrica.split("_")[-1]
+                class_label = metrica.split("_", 1)[-1]
                 if class_label in target:
-                    recall_class = recall_score(target, predicciones, labels=[class_label], average='macro')
-                    print(f"Recall para la clase {class_label}: {recall_class}")
-                    results.append(recall_class)
+                    recall_class = recall_score(target, predicciones, labels=[class_label], average=None, zero_division=0)
+                    print(f"Recall para la clase {class_label}: {recall_class[0]}")
+                    results.append(recall_class[0])
                 else:
-                    raise ValueError(f"La clase {class_label} no está presente en las predicciones")
+                    print(f"La clase {class_label} no está presente en las predicciones")
+                    return None
                 
-    # Si no es regresión o clasificación
-    else:
-        raise ValueError("El tipo de problema debe ser de regresión o clasificación")
-
     return tuple(results)
 
 ###############################################################################
@@ -180,8 +177,12 @@ def get_features_num_classification(dataframe, target_col="", columns=None, pval
     if columns is None:
         columns = dataframe.select_dtypes(include=['number']).columns.tolist()
     else:
-        # Filtrar solo las columnas numéricas que están en la lista
-        columns = [col for col in columns if dataframe[col].dtype in ['float64', 'int64']]
+        # Filtrar solo las columnas numéricas que están en el dataframe
+        valid_columns = [col for col in columns if col in dataframe.columns and dataframe[col].dtype in ['float64', 'int64']]
+        invalid_columns = [col for col in columns if col not in dataframe.columns]
+        for col in invalid_columns:
+            print(f"El nombre de la columna '{col}' no es válido")
+        columns = valid_columns
     
     # Asegurarse de que target_col esté en el dataframe
     if target_col and target_col not in dataframe.columns:
