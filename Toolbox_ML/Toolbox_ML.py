@@ -1,12 +1,16 @@
 # Imports
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
-import numpy as np
 
 from scipy import stats
 from scipy.stats import pearsonr, mannwhitneyu, shapiro, ttest_ind
+from sklearn.feature_selection import mutual_info_classif, SelectKBest, f_classif, SelectFromModel, RFE, SequentialFeatureSelector
+from sklearn.metrics import accuracy_score, precision_score, recall_score, classification_report, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+from scipy.stats import f_oneway
 
 from bootcampviztools import *
 
@@ -96,6 +100,7 @@ def tipifica_variables(df, umbral_categoria, umbral_continua):
 ###############################################################################
 
 # Función | get_features_num_regression
+
 def get_features_num_regression(df, target_col, umbral_corr, pvalue = None):
 
     """
@@ -178,6 +183,7 @@ def get_features_num_regression(df, target_col, umbral_corr, pvalue = None):
 ###############################################################################
 
 # Función | plot_features_num_regression
+
 def plot_features_num_regression(df, target_col = "", columns = [], umbral_corr = 0, pvalue = None):
     
     """
@@ -233,6 +239,7 @@ def plot_features_num_regression(df, target_col = "", columns = [], umbral_corr 
 ###############################################################################
 
 # Función | get_features_cat_regression (Versión 1 - Enunciado)
+
 def get_features_cat_regression(df, target_col, pvalue = 0.05):
     
     #Comprobar que df es un dataframe
@@ -290,6 +297,7 @@ def get_features_cat_regression(df, target_col, pvalue = 0.05):
 ###############################################################################
 
 # Función | get_features_cat_regression (Versión 2)
+
 def get_features_cat_regression_v2(df, target_col, pvalue=0.05):
     
     #Comprobar que df es un dataframe
@@ -352,6 +360,7 @@ def get_features_cat_regression_v2(df, target_col, pvalue=0.05):
 ###############################################################################
 
 # Función | plot_features_cat_regression
+
 def plot_features_cat_regression(df, target_col= "", columns=[], pvalue=0.05):
 
     # Comprobar que df es un dataframe
@@ -411,6 +420,7 @@ def plot_features_cat_regression(df, target_col= "", columns=[], pvalue=0.05):
 ###############################################################################
 
 # Función | plot_features_cat_regression (Versión 2)
+
 def plot_features_cat_regression_v2(df, target_col= "", columns=[], pvalue=0.05):
 
     # Comprobar que df es un dataframe
@@ -470,28 +480,6 @@ def plot_features_cat_regression_v2(df, target_col= "", columns=[], pvalue=0.05)
 
 #################################################################################################
 #################################################################################################
-
-# TOOLBOX II
-
-#################################################################################################
-#################################################################################################
-
-# Imports
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import seaborn as sns
-
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import mutual_info_classif, SelectKBest, f_classif, SelectFromModel, RFE, SequentialFeatureSelector
-from sklearn.metrics import accuracy_score, precision_score, recall_score, classification_report, confusion_matrix, ConfusionMatrixDisplay
-from sklearn.metrics import mean_absolute_error, mean_squared_error
-from scipy.stats import f_oneway
-
-from Toolbox_ML import *
-
-###############################################################################
 
 # Función | eval_model
 
@@ -937,26 +925,29 @@ def super_selector(dataset, target_col = "", selectores = None, hard_voting = []
     hard_voting (list): Lista de features para incluir en el hard voting
 
     Retorna:
-    dict: Diccionario con las listas de features seleccionadas por cada método y una lista final por hard voting
+    dict: Diccionario con las listas de features seleccionadas por cada método y una lista final por hard voting.
     """
     
+    # Inicializar el diccionario de selectores si es None
     if selectores is None:
         selectores = {}
-    
+
+    # Separar features y target del dataset
     features = dataset.drop(columns = [target_col]) if target_col else dataset
     target = dataset[target_col] if target_col else None
     
     result = {}
 
-    # Caso en que selectores es vacío o None
+    # Caso en que selectores esté vacío o sea None
     if target_col and target_col in dataset.columns:
         if not selectores:
+            # Filtrar features que no son constantes y tienen más de una categoría
             filtered_features = [col for col in features.columns if
                                  (features[col].nunique() / len(features) < 0.9999) and
                                  (features[col].nunique() > 1)]
             result["all_features"] = filtered_features
 
-    # Aplicación de selectores si no es vacío
+    # Aplicación de selectores si no está vacío
     if selectores:
         if "KBest" in selectores:
             k = selectores["KBest"]
@@ -968,7 +959,7 @@ def super_selector(dataset, target_col = "", selectores = None, hard_voting = []
         if "FromModel" in selectores:
             model, threshold_or_max = selectores["FromModel"]
             if isinstance(threshold_or_max, int):
-                selector = SelectFromModel(model, max_features = threshold_or_max, threshold = -np.inf)
+                selector = SelectFromModel(model, max_features=threshold_or_max, threshold = -np.inf)
             else:
                 selector = SelectFromModel(model, threshold = threshold_or_max)
             selector.fit(features, target)
@@ -997,9 +988,13 @@ def super_selector(dataset, target_col = "", selectores = None, hard_voting = []
         for key in result:
             voting_features.extend(result[key])
 
+        # Contar la frecuencia de cada feature seleccionada
         feature_counts = pd.Series(voting_features).value_counts()
+        
+        # Seleccionar las features que aparecen más de una vez
         hard_voting_result = feature_counts[feature_counts > 1].index.tolist()
         
+        # Si no hay features repetidas, usar todas
         result["hard_voting"] = hard_voting_result if hard_voting_result else list(feature_counts.index)
 
     return result
